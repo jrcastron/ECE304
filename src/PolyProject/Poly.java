@@ -1,4 +1,5 @@
 package PolyProject;
+import java.math.*;
 
 public class Poly {
 	
@@ -31,7 +32,7 @@ public class Poly {
 	 */
 	public double Eval(double x){
 		double sum = 0.0;
-		for(int i = 0; i <= order; i++){
+		for(int i = order; i >= 0; i--){
 			sum = sum * x + coeff[i]; 
 		}
 		return sum;
@@ -43,12 +44,12 @@ public class Poly {
 	 * @return
 	 */
 	public double FDashn(double x){
-		double h = 1.0e-2;
-		double d1, d2;
+		double h = 1.0e-3;
+		double d1, d2, ans;
 		d1 = Eval(x + h);
 		d2 = Eval(x - h);
-		
-		return (d1 - d2)/(2 * h);
+		ans = (d1 - d2)/(2 * h);
+		return ans;
 	}
 	
 	/**
@@ -216,8 +217,44 @@ public class Poly {
 	/**
 	 * determine the real root of the polynomial
 	 */
-	public void RealRoot(){
-		
+	public double RealRoot(double guess){
+		double h = 1.0e-3;
+		double xn = guess;
+		double xn1;
+		xn1 = NR(xn);
+		while(Math.abs(xn1 - xn) >= h){
+			xn = xn1;
+			xn1 = NR(xn);
+		}
+		return xn1;
+	}
+	
+	private double NR(double x){
+		double xn = x, xn1, fx, fprime;
+		fx = Eval(xn);
+		fprime = NRDerv(xn);
+		xn1 = xn - (fx / fprime);
+		return xn1;
+	}
+	
+	private double NRDerv(double x){
+		double ans = 0;
+		int n = order - 1;
+		double[] coeff_derv = GetCoeff_derv();
+		for(int i = n; i >=0; i--){
+			ans = ans * x + coeff_derv[i];
+		}
+		return ans;
+	}
+	
+	private double[] GetCoeff_derv(){
+		double[] coeff_derv = new double[order + 1];
+		double o = order;
+		for(int i = order; i >= 0; i--){
+			coeff_derv[i] = coeff[i] * o;
+			o--;
+		}
+		return coeff_derv;
 	}
 	
 	/**
@@ -288,8 +325,16 @@ public class Poly {
 	 * @return
 	 */
 	public Poly mult(Poly b){
-		
-		return null;
+		double[] Pcoeff = new double[order + b.order + 1];
+		Poly Ppoly = new Poly(order + b.order);
+		for(int i = 0; i <= order; i++){
+			for(int j = 0; j <= b.order; j++){
+				Pcoeff[i + j] += coeff[i] * b.coeff[j];
+			}
+		}
+		Ppoly.SetCoeff(Pcoeff);
+		return Ppoly;
 	}
+
 
 }
